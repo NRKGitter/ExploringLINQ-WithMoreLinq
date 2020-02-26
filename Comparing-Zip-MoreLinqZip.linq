@@ -12,6 +12,10 @@ void Main()
 {
 
 	var people = new[] { "Ben", "Lily", "Joel", "Sam", "Annie" };
+	var ratings = new[] { 5, 10, 12, 15, 17 };
+	// Zip
+	people.Zip(ratings, (w, p) => $"{w} wins a {p}").Dump("Linq Zip");
+
 	var prizes = new[] {"Football","Paint","Rubik Cube","Fart m/c","Pie"};
 
 	// Zip
@@ -38,3 +42,28 @@ void Main()
 }
 
 // Define other methods and classes here
+public static class MyExts
+{
+
+	public static IEnumerable<R> MyEquiZip<T1, T2, R>(this IEnumerable<T1> first, IEnumerable<T2> second, Func<T1, T2, R> resultSelector)
+	{
+		if (first == null) throw new ArgumentNullException(nameof(first));
+		if (second == null) throw new ArgumentNullException(nameof(second));
+		if (resultSelector == null) throw new ArgumentNullException(nameof(resultSelector));
+
+		using (var e1 = first.GetEnumerator())
+		using (var e2 = second.GetEnumerator())
+		{
+			while (e1.MoveNext())
+			{
+				if (e2.MoveNext())
+					yield return resultSelector(e1.Current, e2.Current);
+				else
+					throw new InvalidOperationException("Second sequence ran out before first");
+			}
+			if (e2.MoveNext())
+				throw new InvalidOperationException("First sequence ran out before second");
+		}
+
+	}
+}
