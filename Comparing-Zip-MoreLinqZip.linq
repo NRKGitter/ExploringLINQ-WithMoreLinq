@@ -36,9 +36,18 @@ void Main()
 	
 	people.ZipLongest(crisps, (w, p) => $"{w} wins a {p}").Dump("Linq Zip with Diff lengths");
 	crisps.ZipLongest(people, (w, p) => $"{w} wins a {p}").Dump("Linq Zip with Diff lengths");
+
+	/*
+	
+		My IMPLEMENTATIONS........
 	
 	
-	
+	*/
+
+	people.MyEquiZip(ratings, (w, p) => $"{w} wins a {p}").Dump("Linq Zip");
+	people.MyLongestZip(crisps, (w, p) => $"{w} wins a {p}").Dump("Linq Zip with Diff lengths");
+	crisps.MyLongestZip(people, (w, p) => $"{w} wins a {p}").Dump("Linq Zip with Diff lengths");
+
 }
 
 // Define other methods and classes here
@@ -66,4 +75,37 @@ public static class MyExts
 		}
 
 	}
+
+	public static IEnumerable<R> MyLongestZip<T1, T2, R>(this IEnumerable<T1> first, IEnumerable<T2> second, Func<T1, T2, R> resultSelector)
+	{
+		if (first == null) throw new ArgumentNullException(nameof(first));
+		if (second == null) throw new ArgumentNullException(nameof(second));
+		if (resultSelector == null) throw new ArgumentNullException(nameof(resultSelector));
+
+		using (var e1 = first.GetEnumerator())
+		using (var e2 = second.GetEnumerator())
+		{
+			while (e1.MoveNext())
+			{
+				if (e2.MoveNext())
+					yield return resultSelector(e1.Current, e2.Current);
+				else
+				{
+					do {
+						yield return resultSelector(e1.Current, default(T2));
+					} while (e1.MoveNext());
+				}
+			}
+			if (e2.MoveNext())
+				do
+				{
+					yield return resultSelector(default(T1), e2.Current);
+				} while (e2.MoveNext());
+		}
+
+	}
+
+
+
+
 }
